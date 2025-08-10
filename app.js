@@ -29,9 +29,9 @@ const reviewRoutes = require('./routes/reviews');
 const session = require('express-session');
 const MongoStore = require('connect-mongo');
 
-//const dbUrl = process.env.DB_URL || 'mongodb://127.0.0.1:27017/yelp-camp';
+const dbUrl = process.env.DB_URL || 'mongodb://127.0.0.1:27017/yelp-camp';
 
-const dbUrl = 'mongodb://127.0.0.1:27017/yelp-camp';
+//const dbUrl = 'mongodb://127.0.0.1:27017/yelp-camp';
 // mongoose.connect(dbUrl, {
 //     useNewUrlParser: true,
 //     useCreateIndex: true,
@@ -40,7 +40,7 @@ const dbUrl = 'mongodb://127.0.0.1:27017/yelp-camp';
 // });
 
 //'mongodb://127.0.0.1:27017/yelp-camp'
-mongoose.connect('mongodb://127.0.0.1:27017/yelp-camp')
+mongoose.connect(dbUrl)
     .then(() => {
         console.log("Mongo CONNECTION OPEN!!!")
     })
@@ -58,11 +58,13 @@ app.use(methodOverride('_method'));
 app.use(express.static(path.join(__dirname, 'public')))
 app.use(sanitizeV5({ replaceWith: '_' }));
 
+const secret = process.env.SECRET || 'thisshouldbeabettersecret!';
+
 const store = MongoStore.create({
     mongoUrl: dbUrl,
     touchAfter: 24 * 60 * 60,
     crypto: {
-        secret: 'thisshouldbeabettersecret!'
+        secret
     }
 });
 
@@ -70,10 +72,11 @@ store.on("error", function (e) {
     console.log("SESSION STORE ERROR", e)
 })
 
+
 const sessionConfig = {
     store,
     name: 'session',
-    secret: 'thisshouldbeabettersecret!',
+    secret,
     resave: false,
     saveUninitialized: true,
     cookie: {
@@ -173,8 +176,10 @@ app.use((err, req, res, next) => {
     res.status(statusCode).render('error', { err })
 })
 
-//const port = process.env.PORT || 3000;
-
-app.listen(3000, () => {
-    console.log('Serving on port 3000')
+const port = process.env.PORT || 3000;
+app.listen(port, () => {
+    console.log(`Serving on port ${port}`)
 })
+// app.listen(3000, () => {
+//     console.log('Serving on port 3000')
+// })
